@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fcfbf9"/>
+      <stop offset="60%" stop-color="#f5f3ef"/>
+      <stop offset="100%" stop-color="#fcfbf9"/>
+    </linearGradient>
+    <linearGradient id="pill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f4f2ed"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="300" rx="20" fill="url(#bg)" stroke="#e4e2dd" stroke-width="1.5"/>
+
+  <!-- Original T Bot Geometric Monogram Emblem -->
+  <rect x="94" y="92" width="112" height="112" rx="28" fill="#18181b" stroke="#3f3f46" stroke-width="2"/>
+  <path d="M124 126 H176 M150 126 V174" fill="none" stroke="#fafafa" stroke-width="8.5" stroke-linecap="round"/>
+  <circle cx="176" cy="174" r="6" fill="#6366f1"/>
+
+  <!-- Title & Subtitle -->
+  <text x="245" y="114" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="50" font-weight="700" fill="#18181b" letter-spacing="-1.2">
+    T Bot — From Scratch <tspan fill="#4f46e5" font-size="24" font-weight="600">v0.1.0</tspan>
+  </text>
+  <text x="245" y="156" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="20" font-weight="400" fill="#52525b">
+    Full-Stack Open-Weight AI Assistant, Specialist Bots &amp; 12-Chapter Engineering Book
+  </text>
+
+  <!-- Feature Pills -->
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="600" fill="#27272a">
+    <rect x="245" y="186" width="160" height="36" rx="18" fill="url(#pill)" stroke="#d6d3cd"/>
+    <text x="325" y="209" text-anchor="middle">Specialist Bots</text>
+
+    <rect x="417" y="186" width="180" height="36" rx="18" fill="url(#pill)" stroke="#d6d3cd"/>
+    <text x="507" y="209" text-anchor="middle">Think &amp; DeepSearch</text>
+
+    <rect x="609" y="186" width="162" height="36" rx="18" fill="url(#pill)" stroke="#d6d3cd"/>
+    <text x="690" y="209" text-anchor="middle">Studio Canvas</text>
+
+    <rect x="783" y="186" width="154" height="36" rx="18" fill="url(#pill)" stroke="#d6d3cd"/>
+    <text x="860" y="209" text-anchor="middle">Whisper Voice</text>
+
+    <rect x="949" y="186" width="182" height="36" rx="18" fill="#eef2ff" stroke="#6366f1"/>
+    <text x="1040" y="209" text-anchor="middle" fill="#4f46e5">Any 8GB+ Laptop / Cloud</text>
+  </g>
+
+  <text x="245" y="258" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="14" fill="#71717a">
+    Zero H100 Required · Free Cloud APIs (Groq / Gemini), Compact Local Ollama (qwen3:4b), or GPU Workstations
+  </text>
+</svg>

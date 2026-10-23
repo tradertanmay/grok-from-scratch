@@ -1,0 +1,14 @@
+.git
+.github
+.venv
+**/__pycache__
+.pytest_cache
+.ruff_cache
+*.egg-info
+*.sqlite3
+.env
+.env.*
+providers.json
+config/
+tests/
+docs/

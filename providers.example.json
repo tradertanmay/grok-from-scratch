@@ -1,0 +1,14 @@
+[
+  {"name": "mac", "base_url": "http://localhost:11434/v1",
+   "models": ["gpt-oss:latest", "qwen3.6:35b", "gemma4:12b"], "max_concurrent": 4},
+  {"name": "mlx", "base_url": "http://127.0.0.1:8088/v1",
+   "models": ["grok-lora"], "max_concurrent": 1},
+  {"name": "h100", "base_url": "http://H100_HOST:8000/v1",
+   "models": ["openai/gpt-oss-120b"]},
+  {"name": "groq", "base_url": "https://api.groq.com/openai/v1", "api_key": "$GROQ_API_KEY",
+   "models": []},
+  {"name": "openrouter", "base_url": "https://openrouter.ai/api/v1",
+   "api_key": "$OPENROUTER_API_KEY", "models": []},
+  {"name": "gemini", "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+   "api_key": "$GEMINI_API_KEY", "models": []}
+]

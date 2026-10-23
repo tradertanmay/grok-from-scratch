@@ -1,0 +1,59 @@
+# docker compose up -d   →  https://$GROK_DOMAIN (default https://localhost)
+# Model endpoints: set LLM_* in .env, or put providers.json in ./config/.
+services:
+  app:
+    build: .
+    image: grok-bot:latest
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      GROK_COOKIE_SECURE: "on"
+      FORWARDED_ALLOW_IPS: "*"   # only Caddy can reach the app (no published port)
+      LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:11434/v1}
+      # python_exec runs each snippet in a throwaway sibling container (no network,
+      # read-only, capped) via the host Docker socket. Mounting the socket gives this
+      # container control of the host's Docker; use GROK_SANDBOX=off and drop the socket
+      # volume + `user: root` to disable code execution instead.
+      GROK_SANDBOX: ${GROK_SANDBOX:-docker}
+    user: root
+    volumes:
+      - grok-data:/data
+      - ./config:/config:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  # Daily online backup of the whole database into the grok-backups volume (7 kept).
+  backup:
+    image: grok-bot:latest
+    restart: unless-stopped
+    depends_on: [app]
+    command: ["python", "-m", "grok_bot.backup", "--dir", "/backups", "--every", "${GROK_BACKUP_HOURS:-24}", "--keep", "${GROK_BACKUP_KEEP:-7}"]
+    user: root
+    volumes:
+      - grok-data:/data
+      - grok-backups:/backups
+    healthcheck:
+      disable: true
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [app]
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      GROK_DOMAIN: ${GROK_DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  grok-data:
+  grok-backups:
+  caddy-data:
+  caddy-config:

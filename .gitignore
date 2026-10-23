@@ -1,0 +1,42 @@
+# Environments & Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / TypeScript
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# OS & Editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*.log
+
+# Local config & training artifacts
+providers.json
+*.sqlite3
+mcp.json
+training/Modelfile
+training/data/
+training/gguf/
+training/adapters/
+

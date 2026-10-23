@@ -1,0 +1,40 @@
+[project]
+name = "grok-bot"
+version = "0.1.0"
+description = "A Grok-style assistant built from scratch around open-weight models"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "httpx>=0.27",
+    "python-multipart>=0.0.9",
+    "pypdf>=4.0",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.9,<2"]
+dev = ["pytest>=8", "ruff>=0.5", "mcp>=1.9,<2"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["grok_bot*", "training*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["docs/book"]  # chapters quote verbatim code slices; formatting them would break excerpts
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.setuptools.package-data]
+grok_bot = ["evals/cases.json"]
+training = ["*.jsonl"]

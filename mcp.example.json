@@ -1,0 +1,19 @@
+{
+  "servers": {
+    "fs": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/srv/shared"],
+      "admin_only": true
+    },
+    "time": {
+      "command": "uvx",
+      "args": ["mcp-server-time"]
+    },
+    "docs": {
+      "url": "https://mcp.example.com/mcp",
+      "headers": {"Authorization": "Bearer ${DOCS_MCP_TOKEN}"},
+      "timeout": 20,
+      "enabled": false
+    }
+  }
+}

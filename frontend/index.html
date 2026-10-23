@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#fcfbf9" />
+  <title>T Bot — Grok Bot</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="app-shell" class="app-shell">
+    <!-- Mobile backdrop -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop hidden"></div>
+
+    <!-- Left Sidebar -->
+    <aside id="sidebar" class="sidebar" aria-label="Sidebar Navigation">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-logo" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="24" height="24" fill="none">
+              <rect x="3.5" y="3.5" width="25" height="25" rx="7.5" stroke="currentColor" stroke-width="2.3"/>
+              <path d="M9.5 11H22.5M16 11V22.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="brand-title">T BOT</span>
+          <span class="brand-badge">v0.1</span>
+        </div>
+        <button id="sidebar-close-btn" class="icon-btn mobile-only" title="Close sidebar" aria-label="Close sidebar">
+          ✕
+        </button>
+      </div>
+
+      <div class="sidebar-actions">
+        <button id="new-chat-btn" class="new-chat-btn" title="Start a new chat (⌘K)">
+          <span class="new-chat-icon">＋</span>
+          <span>New Chat</span>
+          <kbd class="shortcut-kbd">⌘K</kbd>
+        </button>
+
+        <div class="search-box">
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input
+            id="session-search-input"
+            type="search"
+            placeholder="Search conversations..."
+            aria-label="Search conversations"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <div class="sidebar-section-header">
+        <span class="sidebar-section-label">Specialist Bots</span>
+        <button id="open-bot-modal-btn" class="ghost-xs-btn" type="button" title="Create a new specialist bot">＋ Bot</button>
+      </div>
+      <div id="bot-roster-grid" class="bot-roster-grid" role="list" aria-label="Specialist bots"></div>
+
+      <div class="sidebar-section-label">Conversations</div>
+      <div id="session-list" class="session-list" role="list" aria-label="Conversation history"></div>
+
+      <div class="sidebar-nav">
+        <button id="open-tasks-btn" class="sidebar-nav-btn" type="button">
+          <span>⏰ Scheduled Tasks</span>
+          <span id="tasks-count-badge" class="pill-count">0</span>
+        </button>
+        <button id="open-api-keys-btn" class="sidebar-nav-btn" type="button">
+          <span>🔑 API Keys (/v1)</span>
+          <span id="api-keys-count-badge" class="pill-count">SDK</span>
+        </button>
+        <button id="open-memory-btn" class="sidebar-nav-btn" type="button">
+          <span>🧠 Long-Term Memory</span>
+          <span id="memory-count-badge" class="pill-count">0</span>
+        </button>
+        <button id="open-tools-btn" class="sidebar-nav-btn" type="button">
+          <span>🛠️ Tools &amp; System</span>
+          <span id="tools-count-badge" class="pill-count">0</span>
+        </button>
+        <button id="open-account-btn" class="sidebar-nav-btn" type="button">
+          <span>📦 My Data &amp; Quota</span>
+          <span id="quota-nav-badge" class="pill-count">Export</span>
+        </button>
+        <button id="open-admin-btn" class="sidebar-nav-btn hidden" type="button">
+          <span>🛡️ Admin Console</span>
+          <span id="admin-users-badge" class="pill-count">Admin</span>
+        </button>
+      </div>
+
+      <div class="sidebar-footer">
+        <div id="health-status-pill" class="health-pill" title="Backend &amp; Model Status">
+          <span id="health-dot" class="status-dot status-checking"></span>
+          <div class="health-info">
+            <div id="health-model-name" class="health-model">Connecting...</div>
+            <div id="health-provider-url" class="health-url">Checking endpoint</div>
+          </div>
+        </div>
+
+        <div id="user-account-bar" class="user-account-bar">
+          <div class="user-meta">
+            <span class="user-avatar" id="user-avatar">T</span>
+            <span id="user-display-name" class="user-name">Local Mac User</span>
+          </div>
+          <button id="auth-action-btn" class="ghost-sm-btn" type="button">Account</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Stage -->
+    <main class="main-stage">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="sidebar-toggle-btn" class="icon-btn" title="Toggle sidebar" aria-label="Toggle sidebar">
+            ☰
+          </button>
+          <button id="active-bot-pill" class="active-bot-pill" type="button" title="Switch or customize active Specialist Bot">
+            <span id="active-bot-avatar" class="active-bot-avatar"></span>
+            <span id="active-bot-name" class="active-bot-name">T Bot</span>
+            <span id="active-bot-role" class="active-bot-role">General</span>
+          </button>
+          <h1 id="current-session-title" class="session-heading" title="Click to rename conversation">
+            New Conversation
+          </h1>
+          <button id="rename-session-btn" class="icon-btn subtle-btn hidden" title="Rename conversation" aria-label="Rename conversation">
+            ✎
+          </button>
+        </div>
+
+        <div class="topbar-right">
+          <div class="model-picker-group" title="Select LLM Model / Provider">
+            <label for="model-select" class="sr-only">Model</label>
+            <select id="model-select" class="model-select" aria-label="Model selector">
+              <option value="">Default Model</option>
+            </select>
+            <button id="refresh-models-btn" class="icon-btn subtle-btn" title="Refresh available models" aria-label="Refresh models">
+              ↻
+            </button>
+          </div>
+
+          <button id="share-session-btn" class="icon-btn" title="Share read-only conversation link" aria-label="Share conversation">
+            🔗
+          </button>
+          <button id="export-session-btn" class="icon-btn" title="Export conversation as Markdown" aria-label="Export Markdown">
+            ⬇
+          </button>
+          <button id="theme-toggle-btn" class="icon-btn" title="Toggle Dark / Light Theme" aria-label="Toggle Theme">
+            🌙
+          </button>
+        </div>
+      </header>
+
+      <!-- Shared Read-only Banner -->
+      <div id="shared-banner" class="shared-banner hidden">
+        <span>👁️ Viewing shared read-only conversation snapshot.</span>
+        <button id="fork-shared-btn" class="ghost-sm-btn" type="button">Continue in My Chat</button>
+      </div>
+
+      <!-- Messages Viewport -->
+      <section id="messages-container" class="messages-container" aria-live="polite">
+        <div id="empty-state" class="empty-state">
+          <div class="empty-hero-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="44" height="44" fill="none">
+              <rect x="6" y="6" width="36" height="36" rx="11" stroke="currentColor" stroke-width="3.2"/>
+              <path d="M14.5 16.5H33.5M24 16.5V33.5" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="empty-title">What should we explore with T Bot?</h2>
+          <p class="empty-subtitle">
+            Truth-seeking AI assistant with live web search, Python execution sandbox, long-term memory, and local Apple Silicon / vLLM model routing.
+          </p>
+
+          <div class="starter-grid">
+            <button class="starter-card" data-prompt="Search the web for the latest breakthroughs in open-weight reasoning LLMs and summarize the top 3 findings with links.">
+              <span class="starter-tag">🌐 Live Web Search</span>
+              <strong>Latest Open-Weight LLMs</strong>
+              <span>Search the web &amp; synthesize key findings with links</span>
+            </button>
+
+            <button class="starter-card" data-prompt="Use python_exec to simulate 10,000 Monte Carlo paths of a portfolio with 12% annual return and 18% volatility over 1 year, and report the median, 5th percentile, and 95th percentile.">
+              <span class="starter-tag">🐍 Python Sandbox</span>
+              <strong>Monte Carlo Risk Simulation</strong>
+              <span>Execute real Python code &amp; compute exact quantiles</span>
+            </button>
+
+            <button class="starter-card" data-deepsearch="true" data-prompt="Perform a DeepSearch analysis comparing Apple Silicon Unified Memory (MLX/Ollama) vs NVIDIA H100 vLLM inference throughput and memory bandwidth trade-offs.">
+              <span class="starter-tag">🔬 DeepSearch</span>
+              <strong>Mac Unified Memory vs H100</strong>
+              <span>Multi-step research with cross-verified citations</span>
+            </button>
+
+            <button class="starter-card" data-think="true" data-prompt="Write a lock-free ring buffer in Python or C++ and prove why your read/write index updates avoid race conditions under single-producer single-consumer.">
+              <span class="starter-tag">🧠 Think Mode</span>
+              <strong>Lock-Free Ring Buffer Proof</strong>
+              <span>Stream step-by-step reasoning trace + code</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="message-list" class="message-list"></div>
+      </section>
+
+      <!-- Composer Dock -->
+      <footer class="composer-dock">
+        <div id="composer-card" class="composer-card">
+          <!-- Attachments Preview Strip -->
+          <div id="attachment-strip" class="attachment-strip hidden"></div>
+
+          <!-- Modes & Controls Bar -->
+          <div class="composer-modes-bar">
+            <div class="mode-pills-left">
+              <div class="persona-segmented" role="group" aria-label="Persona Mode">
+                <button id="mode-fun-btn" type="button" class="persona-btn active" data-persona="fun" title="Witty, irreverent Grok persona">
+                  🔥 Fun
+                </button>
+                <button id="mode-regular-btn" type="button" class="persona-btn" data-persona="regular" title="Direct, concise, analytical persona">
+                  ⚡ Regular
+                </button>
+              </div>
+
+              <button id="mode-think-btn" type="button" class="mode-pill" aria-pressed="false" title="Show collapsible chain-of-thought reasoning stream (routes to GROK_THINK_MODEL when set)">
+                <span>🧠</span>
+                <span>Think</span>
+              </button>
+
+              <button id="mode-deepsearch-btn" type="button" class="mode-pill" aria-pressed="false" title="Multi-step autonomous web research &amp; cited synthesis">
+                <span>🌐</span>
+                <span>DeepSearch</span>
+              </button>
+            </div>
+
+            <div class="mode-pills-right">
+              <span id="quota-badge" class="quota-badge hidden" title="Remaining daily messages"></span>
+              <button id="voice-input-btn" type="button" class="mode-pill" aria-pressed="false" title="Voice input (records audio for /api/transcribe or uses browser speech recognition)">
+                <span id="voice-btn-icon">🎤</span>
+                <span id="voice-btn-label">Voice</span>
+              </button>
+              <input
+                id="file-input"
+                type="file"
+                class="hidden"
+                multiple
+                accept=".txt,.md,.py,.js,.ts,.json,.csv,.html,.css,.pdf,image/*"
+              />
+              <button id="attach-file-btn" type="button" class="mode-pill" title="Attach files (PDF/code/text) or images for vision">
+                <span>📎</span>
+                <span>Attach</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Input Row -->
+          <div class="composer-input-row">
+            <textarea
+              id="chat-input"
+              class="chat-input"
+              rows="1"
+              placeholder="What do you want to know?"
+              aria-label="Message input"
+            ></textarea>
+
+            <div class="composer-send-controls">
+              <button id="stop-btn" type="button" class="stop-btn hidden" title="Stop generating (Esc)">
+                ⏹ Stop
+              </button>
+              <button id="send-btn" type="button" class="send-btn" title="Send message (Enter)" aria-label="Send message">
+                ↑
+              </button>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <!-- Grok Studio / Canvas Preview Side-Pane -->
+    <aside id="canvas-pane" class="canvas-pane hidden" aria-label="Grok Canvas Preview">
+      <header class="canvas-header">
+        <div class="canvas-header-left">
+          <span class="canvas-badge">✨ Canvas</span>
+          <strong id="canvas-title">Live Preview</strong>
+        </div>
+        <div class="canvas-header-actions">
+          <div class="persona-segmented" role="group" aria-label="Canvas View">
+            <button id="canvas-tab-preview" type="button" class="persona-btn active">Preview</button>
+            <button id="canvas-tab-code" type="button" class="persona-btn">Code</button>
+          </div>
+          <button id="canvas-reload-btn" type="button" class="ghost-sm-btn" title="Reload preview">↻ Reload</button>
+          <button id="canvas-download-btn" type="button" class="ghost-sm-btn" title="Download artifact">⬇ Download</button>
+          <button id="canvas-close-btn" type="button" class="icon-btn" title="Close Canvas" aria-label="Close Canvas">✕</button>
+        </div>
+      </header>
+      <div class="canvas-body">
+        <iframe
+          id="canvas-iframe"
+          class="canvas-iframe"
+          sandbox="allow-scripts"
+          referrerpolicy="no-referrer"
+          title="Grok Studio Sandboxed Preview"
+        ></iframe>
+        <pre id="canvas-code-view" class="canvas-code-view hidden"></pre>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Long-Term Memory Modal -->
+  <div id="memory-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="memory-modal-title">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <div>
+          <h2 id="memory-modal-title">🧠 Long-Term Memory</h2>
+          <p class="modal-subtitle">Persistent facts T Bot remembers across conversations (powered by local embeddings &amp; SQLite).</p>
+        </div>
+        <button class="icon-btn modal-close" data-close-modal="memory-modal" aria-label="Close">✕</button>
+      </div>
+
+      <form id="memory-add-form" class="memory-add-form">
+        <input
+          id="memory-input"
+          type="text"
+          placeholder="Add a fact for T Bot to remember (e.g. 'Prefer Python 3.11 with uv and pytest')..."
+          required
+        />
+        <button type="submit" class="primary-btn">Remember</button>
+      </form>
+
+      <div id="memory-list" class="memory-list"></div>
+    </div>
+  </div>
+
+  <!-- Tools & System Inspector Modal -->
+  <div id="tools-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="tools-modal-title">
+    <div class="modal-panel modal-panel-lg">
+      <div class="modal-header">
+        <div>
+          <h2 id="tools-modal-title">🛠️ Active Tools &amp; Provider Telemetry</h2>
+          <p class="modal-subtitle">Live tools registered in the T Bot agent loop and model endpoint status.</p>
+        </div>
+        <button class="icon-btn modal-close" data-close-modal="tools-modal" aria-label="Close">✕</button>
+      </div>
+
+      <div id="system-telemetry-box" class="telemetry-box"></div>
+      <div id="tools-schema-list" class="tools-schema-list"></div>
+    </div>
+  </div>
+
+  <!-- My Data & Account Modal -->
+  <div id="account-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="account-modal-title">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <div>
+          <h2 id="account-modal-title">📦 My Data, Usage &amp; Account</h2>
+          <p class="modal-subtitle">Export all your conversations, memories, and files, or manage your account.</p>
+        </div>
+        <button class="icon-btn modal-close" data-close-modal="account-modal" aria-label="Close">✕</button>
+      </div>
+
+      <div id="account-usage-summary" class="telemetry-box"></div>
+
+      <div class="account-export-row">
+        <a id="export-account-json" href="/api/account/export?format=json" download class="primary-btn account-export-link">
+          ⬇ Export All Data (JSON)
+        </a>
+        <a id="export-account-md" href="/api/account/export?format=md" download class="ghost-sm-btn account-export-link">
+          ⬇ Export All Data (Markdown)
+        </a>
+      </div>
+
+      <form id="delete-account-form" class="danger-zone-box">
+        <div>
+          <strong>⚠️ Danger Zone — Delete My Account</strong>
+          <p class="modal-subtitle">Permanently deletes your account, conversations, memories, and uploaded files.</p>
+        </div>
+        <div class="danger-zone-controls">
+          <input
+            id="delete-account-password"
+            type="password"
+            placeholder="Confirm your password to delete..."
+            required
+          />
+          <button id="delete-account-btn" type="submit" class="danger-btn">Delete Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Console Modal -->
+  <div id="admin-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+    <div class="modal-panel modal-panel-lg">
+      <div class="modal-header">
+        <div>
+          <h2 id="admin-modal-title">🛡️ Admin Console</h2>
+          <p class="modal-subtitle">Manage users, generate invite codes, and inspect 7-day usage &amp; quotas.</p>
+        </div>
+        <button class="icon-btn modal-close" data-close-modal="admin-modal" aria-label="Close">✕</button>
+      </div>
+
+      <!-- Invite Generator -->
+      <div class="admin-section">
+        <div class="admin-section-header">
+          <strong>🎟️ Invite Codes</strong>
+          <div class="admin-invite-controls">
+            <label class="admin-inline-field">
+              Uses
+              <input id="admin-invite-uses" type="number" min="1" max="1000" value="5" />
+            </label>
+            <label class="admin-inline-field">
+              Days
+              <input id="admin-invite-days" type="number" min="1" max="365" value="7" />
+            </label>
+            <button id="admin-create-invite-btn" type="button" class="primary-btn">Generate Invite</button>
+          </div>
+        </div>
+
+        <div id="admin-new-invite-box" class="invite-created-banner hidden">
+          <span>New Invite Code (shown once): <code id="admin-new-invite-code"></code></span>
+          <button id="admin-copy-invite-btn" type="button" class="ghost-sm-btn">Copy Code</button>
+        </div>
+
+        <div id="admin-invites-list" class="admin-list"></div>
+      </div>
+
+      <!-- Users Management -->
+      <div class="admin-section">
+        <div class="admin-section-header">
+          <strong>👥 Registered Users</strong>
+        </div>
+        <div id="admin-users-list" class="admin-list"></div>
+      </div>
+
+      <!-- Usage Telemetry -->
+      <div class="admin-section">
+        <div class="admin-section-header">
+          <strong>📊 7-Day Usage &amp; Model Accounting</strong>
+        </div>
+        <div id="admin-usage-box" class="telemetry-box"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scheduled Tasks Modal -->
+  <div id="tasks-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="tasks-modal-title">
+    <div class="modal-panel modal-panel-lg">
+      <div class="modal-header">
+        <div>
+          <h2 id="tasks-modal-title">⏰ Scheduled Tasks</h2>
+          <p class="modal-subtitle">Automate recurring or one-off Grok prompts. Each run saves a new <code>Task: &lt;title&gt;</code> conversation.</p>
+        </div>
+        <button class="icon-btn modal-close" data-close-modal="tasks-modal" aria-label="Close">✕</button>
+      </div>
+
+      <form id="task-form" class="task-form-box">
+        <input id="task-edit-id" type="hidden" value="" />
+        <div class="task-form-grid">
+          <label class="form-field">
+            <span>Task Title</span>
+            <input id="task-title" type="text" placeholder="e.g. Morning AI News Digest" required />
+          </label>
+          <label class="form-field">
+            <span>Schedule</span>
+            <select id="task-schedule">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="once">One-off (Once)</option>
+            </select>
+          </label>
+          <label id="task-time-wrap" class="form-field">
+            <span>Local Time</span>
+            <input id="task-time" type="time" value="08:00" />
+          </label>
+          <label id="task-weekday-wrap" class="form-field hidden">
+            <span>Day of Week</span>
+            <select id="task-weekday">
+              <option value="0">Monday</option>
+              <option value="1">Tuesday</option>
+              <option value="2">Wednesday</option>
+              <option value="3">Thursday</option>
+              <option value="4">Friday</option>
+              <option value="5">Saturday</option>
+              <option value="6">Sunday</option>
+            </select>
+          </label>
+          <label id="task-at-wrap" class="form-field hidden">
+            <span>Run At (Local Date &amp; Time)</span>
+            <input id="task-at" type="datetime-local" />
+          </label>
+        </div>
+
+        <label class="form-field" style="margin-top:8px;">
+          <span>Prompt</span>
+          <textarea id="task-prompt" rows="2" class="task-prompt-input" placeholder="Search the web for today's top 3 AI engineering stories and summarize them with links..." required></textarea>
+        </label>
+
+        <div class="task-form-footer">
+          <div class="task-mode-options">
+            <label class="admin-inline-field">
+              Persona
+              <select id="task-mode">
+                <option value="fun">🔥 Fun</option>
+                <option value="regular">⚡ Regular</option>
+              </select>
+            </label>
+            <label class="admin-inline-field">
+              <input id="task-think" type="checkbox" />
+              🧠 Think
+            </label>
+            <label class="admin-inline-field">
+              <input id="task-deepsearch" type="checkbox" />
+              🌐 DeepSearch
+            </label>
+          </div>
+          <div class="admin-row-actions">
+            <button id="task-cancel-edit-btn" type="button" class="ghost-sm-btn hidden">Cancel Edit</button>
+            <button id="task-submit-btn" type="submit" class="primary-btn">Save Task</button>
+          </div>
+        </div>
+      </form>
+
+      <div id="tasks-list" class="admin-list"></div>
+    </div>
+  </div>
+
+  <!-- Personal API Keys (/v1) Modal -->
+  <div id="api-keys-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="api-keys-modal-title">
+    <div class="modal-panel modal-panel-lg">
+      <div class="modal-header">
+        <div>
+          <h2 id="api-keys-modal-title">🔑 OpenAI-Compatible API &amp; Personal Keys</h2>
+          <p class="modal-subtitle">Connect Cursor, Open WebUI, or the official <code>openai</code> SDK to your Grok agent (tools, memory, personas).</p>
+        </div>
+        <button class="icon-btn modal-close" data-close-modal="api-keys-modal" aria-label="Close">✕</button>
+      </div>
+
+      <div class="telemetry-box">
+        <div class="api-endpoint-row">
+          <div>
+            <strong>Base URL:</strong> <code id="api-base-url-display">http://127.0.0.1:8000/v1</code>
+          </div>
+          <button id="copy-base-url-btn" type="button" class="ghost-sm-btn">Copy URL</button>
+        </div>
+        <div style="margin-top:6px;">
+          <strong>Persona Model IDs:</strong>
+          <code>grok</code> · <code>grok-regular</code> · <code>grok-think</code> · <code>grok-regular-think</code> · <code>grok-deepsearch</code>
+        </div>
+        <pre id="api-sdk-snippet" class="api-snippet-pre"></pre>
+      </div>
+
+      <form id="api-key-create-form" class="memory-add-form">
+        <input
+          id="api-key-name-input"
+          type="text"
+          placeholder="Key label (e.g. Cursor IDE, Open WebUI, Mac CLI)..."
+          required
+        />
+        <button id="api-key-create-btn" type="submit" class="primary-btn">Create API Key</button>
+      </form>
+
+      <div id="new-api-key-box" class="invite-created-banner hidden">
+        <span>New API Key (shown once): <code id="new-api-key-value"></code></span>
+        <button id="copy-new-api-key-btn" type="button" class="ghost-sm-btn">Copy Key</button>
+      </div>
+
+      <div id="api-keys-list" class="admin-list"></div>
+    </div>
+  </div>
+
+  <!-- Auth (Login / Signup) Modal -->
+  <div id="auth-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+    <div class="modal-panel modal-panel-sm">
+      <div class="modal-header">
+        <div>
+          <h2 id="auth-modal-title">Account Access</h2>
+          <p id="auth-modal-subtitle" class="modal-subtitle">Sign in or create an account to sync private sessions and memories.</p>
+        </div>
+        <button class="icon-btn modal-close" data-close-modal="auth-modal" aria-label="Close">✕</button>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="auth-tab-login" type="button" class="auth-tab active">Log In</button>
+        <button id="auth-tab-signup" type="button" class="auth-tab">Sign Up</button>
+      </div>
+
+      <form id="auth-form" class="auth-form">
+        <label class="form-field">
+          <span>Username</span>
+          <input id="auth-username" type="text" autocomplete="username" required minlength="2" />
+        </label>
+        <label class="form-field">
+          <span>Password</span>
+          <input id="auth-password" type="password" autocomplete="current-password" required minlength="6" />
+        </label>
+        <label id="auth-invite-field" class="form-field hidden">
+          <span>Invite Code</span>
+          <input id="auth-invite" type="text" autocomplete="off" placeholder="Enter invite code..." />
+        </label>
+        <div id="auth-error-msg" class="auth-error hidden"></div>
+        <div class="auth-actions">
+          <button id="auth-submit-btn" type="submit" class="primary-btn full-width">Log In</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create / Edit Specialist Bot Modal -->
+  <div id="bot-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="bot-modal-title">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <div>
+          <h2 id="bot-modal-title">🤖 Specialist Bot Studio</h2>
+          <p class="modal-subtitle">Create a role-based AI teammate with custom instructions, mode defaults, and an original geometric avatar.</p>
+        </div>
+        <button class="icon-btn modal-close" data-close-modal="bot-modal" aria-label="Close">✕</button>
+      </div>
+
+      <form id="bot-form" class="task-form-box">
+        <div class="task-form-grid">
+          <label class="form-field">
+            <span>Bot Name</span>
+            <input id="bot-name-input" type="text" placeholder="e.g. Quant Analyst, Chief of Staff" required />
+          </label>
+          <label class="form-field">
+            <span>Role / Specialty Label</span>
+            <input id="bot-role-input" type="text" placeholder="e.g. Risk & Python, Inbox & Briefs" required />
+          </label>
+          <label class="form-field">
+            <span>Geometric Icon</span>
+            <select id="bot-icon-select">
+              <option value="orbit">Orbit Core</option>
+              <option value="hex">Hex Lattice</option>
+              <option value="compass">Compass Lens</option>
+              <option value="pulse">Pulse Wave</option>
+              <option value="prism">Prism Diamond</option>
+              <option value="shield">Aegis Shield</option>
+            </select>
+          </label>
+          <label class="form-field">
+            <span>Accent Color</span>
+            <select id="bot-color-select">
+              <option value="#18181b">Obsidian Ink</option>
+              <option value="#4f46e5">Indigo Cobalt</option>
+              <option value="#0d9488">Teal Emerald</option>
+              <option value="#d97706">Warm Amber</option>
+              <option value="#0284c7">Sky Azure</option>
+              <option value="#e11d48">Crimson Rose</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="form-field" style="margin-top:8px;">
+          <span>Operating Instructions</span>
+          <textarea id="bot-instructions-input" rows="3" class="task-prompt-input" placeholder="Describe how this specialist bot should reason, use tools, and format outputs..." required></textarea>
+        </label>
+
+        <div class="task-form-footer">
+          <div class="task-mode-options">
+            <label class="admin-inline-field">
+              Persona
+              <select id="bot-persona-select">
+                <option value="regular">⚡ Regular</option>
+                <option value="fun">🔥 Fun</option>
+              </select>
+            </label>
+            <label class="admin-inline-field">
+              <input id="bot-think-check" type="checkbox" />
+              🧠 Default Think
+            </label>
+            <label class="admin-inline-field">
+              <input id="bot-deepsearch-check" type="checkbox" />
+              🌐 Default DeepSearch
+            </label>
+          </div>
+          <div class="admin-row-actions">
+            <button id="bot-submit-btn" type="submit" class="primary-btn">Save Specialist Bot</button>
+          </div>
+        </div>
+      </form>
+
+      <div id="custom-bots-list" class="admin-list"></div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
